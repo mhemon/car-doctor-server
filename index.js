@@ -40,7 +40,7 @@ const verifyJWT = (req, res, next) => {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        client.connect();
 
         const serviceCollection = client.db('carDoctor').collection('services');
         const bookingCollection = client.db('carDoctor').collection('bookings');
@@ -54,7 +54,14 @@ async function run() {
         })
 
         app.get('/services', async (req, res) => {
-            const cursor = serviceCollection.find();
+            const sort = req.query.sort
+            const search = req.query.search
+            const query = {title: {$regex: search, $options: 'i'}}
+            // const query = { price: { $gte: 150 } };
+            const options = {
+                sort: { "price": sort === 'asc' ? 1 : -1}
+            }
+            const cursor = serviceCollection.find(query, options);
             const result = await cursor.toArray();
             res.send(result);
         })
